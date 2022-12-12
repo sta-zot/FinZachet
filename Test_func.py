@@ -195,29 +195,29 @@ def init_Firefox():
     d = webdriver.Firefox()
     return d
 
-
-def get_users(path: str) -> list:
-    '''Функция принимает путь к файлу и возращает список словарей в формате имя-пол-возраст-email'''
-    user_list = []
-    # Считываем данные из файла при помощи библиотеки Pandas
-    excel_data = pd.read_excel(path)
-    # Конвертируем данные в CSV
-    users_raw = excel_data.to_csv().split(sep="\r\n")
-    headers = excel_data.columns.tolist()
-    iter_count = 0
-    # В цикле собираем список в нужном формате
-    for row in users_raw:
-        if check_in(headers, row):
-            continue
-        row = row.split(sep=',')
-        iter_count = iter_count + 1
-        try:
-            # print([{headers[0]:row[1], headers[1]:row[2], headers[2]:row[3],headers[3]:row[4]}])
-            user_list.append({headers[0]: row[1], headers[1]: row[2], headers[2]: row[3], headers[3]: row[4]})
-        except IndexError as error:
-            print(f"ERROR in {iter_count} iteration.\nError description: {error} : {row}")
-            continue
-    return user_list
+# Function deprecated
+# def get_users(path: str) -> list:
+#     '''Функция принимает путь к файлу и возращает список словарей в формате имя-пол-возраст-email'''
+#     user_list = []
+#     # Считываем данные из файла при помощи библиотеки Pandas
+#     excel_data = pd.read_excel(path)
+#     # Конвертируем данные в CSV
+#     users_raw = excel_data.to_csv().split(sep="\r\n")
+#     headers = excel_data.columns.tolist()
+#     iter_count = 0
+#     # В цикле собираем список в нужном формате
+#     for row in users_raw:
+#         if check_in(headers, row):
+#             continue
+#         row = row.split(sep=',')
+#         iter_count = iter_count + 1
+#         try:
+#             # print([{headers[0]:row[1], headers[1]:row[2], headers[2]:row[3],headers[3]:row[4]}])
+#             user_list.append({headers[0]: row[1], headers[1]: row[2], headers[2]: row[3], headers[3]: row[4]})
+#         except IndexError as error:
+#             print(f"ERROR in {iter_count} iteration.\nError description: {error} : {row}")
+#             continue
+#     return user_list
 
 
 def check_driver_work(drv: webdriver, url: str) -> None:
