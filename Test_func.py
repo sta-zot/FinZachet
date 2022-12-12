@@ -18,7 +18,6 @@ from selenium.webdriver.chrome.service import Service
 from questions_db import questions_list
 
 
-
 ##############################################################################################
 
 ########################################Functions##############################################
@@ -37,7 +36,6 @@ def printException():
 def select_answer(
         drv: webdriver,
         questions_selector: str = '//div[@class = "questionsMainLk__main-main-title"]') -> None:
-
     questions = drv.find_element(By.XPATH, questions_selector)
     que_txt = questions.text.split('.')[0]
     answers = questions_list[que_txt]
@@ -47,21 +45,18 @@ def select_answer(
 
 
 # Function for start automatic executing test
-def stoper() -> None:
-    answer = input("Continue? Yes/No: ").lower()
-    if answer == "yes":
-        return None
-    elif answer == "no":
-        sys.exit(1)
-
-
 def start_test(user: dict, drv: webdriver, url: str) -> int:
     """
     Функция принимает словарь с данными пользователя и проходит тест
+        :param: user Параметр с типом словарь содержащий информацию о проходящем иестирование/ A parameter with the dictionary type containing information about the being tested
+        :param: drv Параметр являющийся объектом класса webdriver./ A parameter that is the webdriver instances
+        :param: url Строковый параметр содержащий адрес WEB сайта/ This is string parameter containing the address of a WEB site
     """
+
     wait = WebDriverWait(drv, 10)
 
     drv.get(url)
+    print(f"{user['name']} начал тестирование")
     element = WebDriverWait(drv, 2).until(
         EC.element_to_be_clickable((By.XPATH, '//a[contains(text(), "Участвовать")]')))
     element.click()
@@ -72,12 +67,11 @@ def start_test(user: dict, drv: webdriver, url: str) -> int:
     email.send_keys(user["email"])
     paswd = drv.find_element(By.XPATH, '//input[@placeholder = "Пароль"]')
     paswd.clear()
-    paswd.send_keys(user['pass'])
+    paswd.send_keys(user['password'])
     paswd.send_keys(Keys.ENTER)
     sleep(1)
     del email, paswd
-    sleep(1)
-    # stoper()
+
     # Edit profile
     try:
         drv.find_element(
@@ -86,14 +80,14 @@ def start_test(user: dict, drv: webdriver, url: str) -> int:
         )
         print("Заполнение формы при регистрации")
     except Exception:
-        print("Изменение Профиля")
+        print("Изменение данных в профиле")
         drv.find_element(By.XPATH, ('//span[text() = "Изменить"]')).click()
-
     sleep(1)
+
     if drv.find_element(By.XPATH, '//input[@placeholder = "Имя (будет указано в сертификате)" ]'):
         uname = drv.find_element(By.XPATH, '//input[@placeholder = "Имя (будет указано в сертификате)" ]')
-        uname.clear();
-        uname.send_keys(user["name"]);
+        uname.clear()
+        uname.send_keys(user["name"])
         del uname
     if user["gender"].lower() == "м":
         drv.find_element(By.XPATH, '//*[.="Муж"]').click()
@@ -113,41 +107,27 @@ def start_test(user: dict, drv: webdriver, url: str) -> int:
         perform()
     # Change education level
     drv.find_element(By.XPATH, '//input[@placeholder = "Образование"]').click()
-    if drv.find_element(By.XPATH, '//div[@class = "select__item" and contains(text(), "профес")]'):
-        drv.find_element(By.XPATH, '//div[@class = "select__item" and contains(text(), "профес")]').click()
+    if drv.find_element(By.XPATH, f'//div[@class = "select__item" and contains(text(), "{user["edu_lvl"]}")]'):
+        drv.find_element(By.XPATH, f'//div[@class = "select__item" and contains(text(), "{user["edu_lvl"]}")]').click()
     # Change region
     drv.find_element(By.XPATH, '//input[@placeholder = "Регион"]').click()
-    if drv.find_element(By.XPATH, '//div[@class = "select__item" and contains(text(), "Рязан")]'):
-        drv.find_element(By.XPATH, '//div[@class = "select__item" and contains(text(), "Рязан")]').click()
+    if drv.find_element(By.XPATH, f'//div[@class = "select__item" and contains(text(), "{user["region"]}]")]'):
+        drv.find_element(By.XPATH, f'//div[@class = "select__item" and contains(text(), "{user["region"]}")]').click()
     sleep(1)
 
     drv.find_element(By.XPATH, ('//div[@class = "button__name" and text() = "Сохранить"] ')).click()
     sleep(1)
     # Starting test
-    print("Starting test")
+    print("Начало тестирования:")
     try_count = 3
-
     while try_count > 0:
         try:
             participate = drv.find_element(By.XPATH, '//button[.= "Участвовать"]')
-            print("Executing JS script")
             drv.execute_script('Elem =  arguments[0]; Elem.click()', participate)
-            # ActionChains(drv)\
-            #     .move_to_element(participate)\
-            #     .pause(1)\
-            #     .click_and_hold()\
-            #     .pause(1)\
-            #     .perform()
-
             break
         except TimeoutException as err:
             again = drv.find_element('//button[contains(text(), "Еще раз")]')
-            print("Executing JS script")
             drv.execute_script('Elem =  arguments[0]; Elem.click()', again)
-            again.click()
-
-
-
     sleep(1)
 
     if drv.find_element(By.XPATH, '//button[.="Начать"]'):
@@ -157,7 +137,7 @@ def start_test(user: dict, drv: webdriver, url: str) -> int:
         if drv.find_element(By.XPATH, '//button[.="Завершить"]'):
             drv.find_element(By.XPATH, '//button[.="Завершить"]').click()
             sleep(1)
-            drv.find_element(By.XPATH,'//a[@class = "lkButton headerLk__btn-lk"]').click()
+            drv.find_element(By.XPATH, '//a[@class = "lkButton headerLk__btn-lk"]').click()
             participate = drv.find_element(By.XPATH, '//button[.= "Участвовать"]')
             print("Executing JS script")
             drv.execute_script('Elem =  arguments[0]; Elem.click()', participate)
@@ -166,56 +146,40 @@ def start_test(user: dict, drv: webdriver, url: str) -> int:
                 drv.find_element(By.XPATH, '//button[.="Начать"]').click()
     except NoSuchElementException as e:
         pass
-
-
-
-
-
+    # Получаем количество вопросов
     questions_count = int(
         re.match(
             r"\D*?(\d+)",
-            drv.find_element(By.XPATH, '//span[@class = "questionsMainLk__main-nums-big"]/following-sibling::span').text)\
-        .group(1)
+            drv.find_element(By.XPATH,
+                             '//span[@class = "questionsMainLk__main-nums-big"]/following-sibling::span').text).group(1)
     )
-    print(questions_count)
-
     iter_c = questions_count
     while iter_c > 0:
         sleep(0.5)
         select_answer(drv)
         bt_next = drv.find_element(By.XPATH, '//div[.= "Следующий"]')
         bt_next.click()
-        iter_c = iter_c - 1
+        iter_c -= 1
 
     # Send certificate to email
     drv.find_element(By.XPATH, '//button[@class = "linkAlt-black" and contains(Text(), "Отправить")]').click()
     # close_email_notification
+    sleep(0.5)
     drv.find_element(By.XPATH, '//i[@class = "icon-crossAlt"]').click()
     # Quit to main page
     drv.find_element(By.XPATH, '//a[@class = "lkButton"]').click()
-
-    while True:
-        if input('Cosing browser? "YES/NO"').lower() == 'yes':
-            drv.close()
-            drv.quit()
-            print("GoodBy")
-            sys.exit(0)
-
     drv.quit()
     return 0
 
 
-# Function for check headers or value may be not need
-def check_in(what_ch, where_ch):
-    for item in what_ch:
-        if item in where_ch:
-            return True
-        else:
-            return False
-
-
-# Initiation
 def init_Chrome():
+    """
+    Функция создаёт экземпляр webdriver с заданными параметрами.
+    Все парамеры задаются локально непосредственно в функции.
+    :return: webdriver.Chrome instance
+    """
+    # Варианты агентов можно посмотреть здесь https://github.com/fake-useragent/fake-useragent
+    agents = ["ie","msie","chrome","google",'google chrome',"firefox", 'ff', "safari"]
     service = Service(executable_path="WebDrivers/chromedriver.exe")
     useragent = UserAgent()
     drv_options = webdriver.ChromeOptions()
@@ -223,7 +187,7 @@ def init_Chrome():
     drv_options.add_argument("--disable-blink-features=AutomationControlled")
     # drv_options.add_argument("--headless")
     # drv_options.headless = True
-    d = webdriver.Chrome(service = service, options=drv_options)
+    d = webdriver.Chrome(service=service, options=drv_options)
     return d
 
 
