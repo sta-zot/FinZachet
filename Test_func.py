@@ -5,7 +5,6 @@ import re
 import sys
 from time import sleep
 
-import pandas as pd
 from fake_useragent import UserAgent
 from selenium import webdriver
 from selenium.common.exceptions import *
@@ -52,9 +51,7 @@ def start_test(user: dict, drv: webdriver, url: str) -> int:
         :param: drv Параметр являющийся объектом класса webdriver./ A parameter that is the webdriver instances
         :param: url Строковый параметр содержащий адрес WEB сайта/ This is string parameter containing the address of a WEB site
     """
-
     wait = WebDriverWait(drv, 10)
-
     drv.get(url)
     print(f"{user['name']} начал тестирование")
     element = WebDriverWait(drv, 2).until(
@@ -71,7 +68,6 @@ def start_test(user: dict, drv: webdriver, url: str) -> int:
     paswd.send_keys(Keys.ENTER)
     sleep(1)
     del email, paswd
-
     # Edit profile
     try:
         drv.find_element(
@@ -83,7 +79,6 @@ def start_test(user: dict, drv: webdriver, url: str) -> int:
         print("Изменение данных в профиле")
         drv.find_element(By.XPATH, ('//span[text() = "Изменить"]')).click()
     sleep(1)
-
     if drv.find_element(By.XPATH, '//input[@placeholder = "Имя (будет указано в сертификате)" ]'):
         uname = drv.find_element(By.XPATH, '//input[@placeholder = "Имя (будет указано в сертификате)" ]')
         uname.clear()
@@ -111,28 +106,25 @@ def start_test(user: dict, drv: webdriver, url: str) -> int:
         drv.find_element(By.XPATH, f'//div[@class = "select__item" and contains(text(), "{user["edu_lvl"]}")]').click()
     # Change region
     drv.find_element(By.XPATH, '//input[@placeholder = "Регион"]').click()
-    if drv.find_element(By.XPATH, f'//div[@class = "select__item" and contains(text(), "{user["region"]}]")]'):
+    if drv.find_element(By.XPATH, f'//div[@class = "select__item" and contains(text(), "{user["region"]}")]'):
         drv.find_element(By.XPATH, f'//div[@class = "select__item" and contains(text(), "{user["region"]}")]').click()
     sleep(1)
-
     drv.find_element(By.XPATH, ('//div[@class = "button__name" and text() = "Сохранить"] ')).click()
     sleep(1)
     # Starting test
     print("Начало тестирования:")
     try_count = 3
-    while try_count > 0:
-        try:
-            participate = drv.find_element(By.XPATH, '//button[.= "Участвовать"]')
-            drv.execute_script('Elem =  arguments[0]; Elem.click()', participate)
-            break
-        except TimeoutException as err:
-            again = drv.find_element('//button[contains(text(), "Еще раз")]')
-            drv.execute_script('Elem =  arguments[0]; Elem.click()', again)
+    try:
+        again = drv.find_element(By.XPATH, '//button[.= "Еще раз"]')
+        drv.execute_script('Elem =  arguments[0]; Elem.click()', again)
+    except NoSuchElementException as err:
+        participate = drv.find_element(By.XPATH, '//button[.= "Участвовать"]')
+        drv.execute_script('Elem =  arguments[0]; Elem.click()', participate)
     sleep(1)
 
-    if drv.find_element(By.XPATH, '//button[.="Начать"]'):
-        drv.find_element(By.XPATH, '//button[.="Начать"]').click()
-    sleep(1)
+    # if drv.find_element(By.XPATH, '//button[.="Начать"]'):
+    #     drv.find_element(By.XPATH, '//button[.="Начать"]').click()
+    # sleep(1)
     try:
         if drv.find_element(By.XPATH, '//button[.="Завершить"]'):
             drv.find_element(By.XPATH, '//button[.="Завершить"]').click()
@@ -160,14 +152,15 @@ def start_test(user: dict, drv: webdriver, url: str) -> int:
         bt_next = drv.find_element(By.XPATH, '//div[.= "Следующий"]')
         bt_next.click()
         iter_c -= 1
-
-    # Send certificate to email
-    drv.find_element(By.XPATH, '//button[@class = "linkAlt-black" and contains(Text(), "Отправить")]').click()
-    # close_email_notification
     sleep(0.5)
-    drv.find_element(By.XPATH, '//i[@class = "icon-crossAlt"]').click()
+    drv.find_element(By.XPATH, '//button[.= "Завершить"]').click()
+    # Send certificate to email
+    drv.find_element(By.XPATH, ('//button[.= "отправить НА email" ]')).click()
+    sleep(0.5)
+    # close_email_notification
+    drv.find_element(By.XPATH, '//div[@class = "authorizationForm__close" ]').click()
     # Quit to main page
-    drv.find_element(By.XPATH, '//a[@class = "lkButton"]').click()
+    drv.find_element(By.XPATH, '//a[contains(@class, "headerLk__btn-lk")]').click()
     drv.quit()
     return 0
 
@@ -192,8 +185,7 @@ def init_Chrome():
 
 
 def init_firefox():
-    d = webdriver.Firefox()
-    return d
+   pass
 
 # Function deprecated
 # def get_users(path: str) -> list:
@@ -220,11 +212,6 @@ def init_firefox():
 #     return user_list
 
 
-def check_driver_work(drv: webdriver, url: str) -> None:
-    drv.get(url)
-    print(drv.page_source.encode("utf-8"))
-    sleep(10)
-    drv.quit()
 
 
 if __name__ == "__main__":

@@ -1,0 +1,4 @@
+venv/
+.idea/
+geckodriver.log
+test_script.ipynb
