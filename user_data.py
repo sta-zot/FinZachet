@@ -50,8 +50,8 @@ class User_data:
     def __del__(self):
         if self.__file_des:
             self.__file_des.close()
-        # if os.path.isfile(self.__csv_path):
-        #     os.remove(self.__csv_path)
+        if os.path.isfile(self.__csv_path):
+            os.remove(self.__csv_path)
 
 
 if __name__ == "__main__":
