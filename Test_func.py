@@ -179,7 +179,7 @@ def init_Chrome():
     :return: webdriver.Chrome instance
     """
     # Варианты агентов можно посмотреть здесь https://github.com/fake-useragent/fake-useragent
-    agents = ["ie","msie","chrome","google",'google chrome',"firefox", 'ff', "safari"]
+    agents = ["ie", "msie", "chrome", "google", 'google chrome', "firefox", 'ff', "safari"]
     service = Service(executable_path="WebDrivers/chromedriver.exe")
     useragent = UserAgent()
     drv_options = webdriver.ChromeOptions()
@@ -191,7 +191,7 @@ def init_Chrome():
     return d
 
 
-def init_Firefox():
+def init_firefox():
     d = webdriver.Firefox()
     return d
 
