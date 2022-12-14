@@ -1,4 +1,4 @@
-############################ Import libs#################################################
+# ----------------------------------Import libs-----------------------------------------
 
 import re
 import sys
@@ -16,9 +16,9 @@ from selenium.webdriver.chrome.service import Service
 from questions_db import questions_list
 
 
-##############################################################################################
+# ----------------------------------------------------------------------------------------
 
-########################################Functions##############################################
+# -----------------------------------Functions--------------------------------------------
 
 
 def confirm(drv: webdriver.Chrome, ms_url: str, m_address: str):
@@ -56,10 +56,10 @@ def confirm(drv: webdriver.Chrome, ms_url: str, m_address: str):
 
 
 def create_email():
-    pass
+    return "email"
 
 
-def registration_on_site(drv: webdriver.Chrome, user_data: dict, url: str ) -> int:
+def registration_on_site(drv: webdriver.Chrome, user_data: dict, url: str) -> int:
     """
     Function for register user on site
     :param drv: WebDriver object
@@ -111,6 +111,7 @@ def select_answer(
         selector = f'//span[text() = "{answer.strip()}"]'
         drv.find_element(By.XPATH, selector).click()
 
+
 def start_personal(drv: webdriver.Chrome):
     block = drv.find_element(By.XPATH, '//div[contains(text(), "Личный зачет")]/../../..')
     try:
@@ -126,9 +127,6 @@ def start_personal(drv: webdriver.Chrome):
 def start_family(drv: webdriver.Chrome):
     block = drv.find_element(By.XPATH, '//div[contains(text(), "Семейный зачет")]/../../..')
     participate = block.find_element(By.XPATH, '//button[.="Участвовать"]')
-
-
-
 
 
 # Function for start automatic executing test
@@ -261,7 +259,8 @@ def init_Chrome():
 
 
 def init_firefox():
-   pass
+    pass
+
 
 # Function deprecated
 # def get_users(path: str) -> list:
@@ -286,8 +285,6 @@ def init_firefox():
 #             print(f"ERROR in {iter_count} iteration.\nError description: {error} : {row}")
 #             continue
 #     return user_list
-
-
 
 
 if __name__ == "__main__":
