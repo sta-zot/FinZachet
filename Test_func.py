@@ -102,16 +102,6 @@ def registration_on_site(drv: webdriver.Chrome, user_data: dict, url: str ) -> i
     return 0
 
 
-def printException():
-    exc_type, exc_obj, tb = sys.exc_info()
-    f = tb.tb_frame
-    lineno = tb.tb_lineno
-    filename = f.f_code.co_filename
-    linecache.checkcache(filename)
-    line = linecache.getline(filename, lineno, f.f_globals)
-    print('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
-
-
 def select_answer(
         drv: webdriver,
         questions_selector: str = '//div[@class = "questionsMainLk__main-main-title"]') -> None:
@@ -121,6 +111,25 @@ def select_answer(
     for answer in answers:
         selector = f'//span[text() = "{answer.strip()}"]'
         drv.find_element(By.XPATH, selector).click()
+
+def start_personal(drv: webdriver.Chrome):
+    block = drv.find_element(By.XPATH, '//div[contains(text(), "Личный зачет")]/../../..')
+    try:
+        again = block.find_element(By.XPATH, '//button[.= "Еще раз"]')
+        drv.execute_script('Elem =  arguments[0]; Elem.click()', again)
+    except NoSuchElementException as err:
+        participate = block.find_element(By.XPATH, '//button[.= "Участвовать"]')
+        drv.execute_script('Elem =  arguments[0]; Elem.click()', participate)
+        drv.find_element(By.XPATH, '//button[.= "Начать"]')
+    sleep(1)
+
+
+def start_family(drv: webdriver.Chrome):
+    block = drv.find_element(By.XPATH, '//div[contains(text(), "Семейный зачет")]/../../..')
+    participate = block.find_element(By.XPATH, '//button[.="Участвовать"]')
+
+
+
 
 
 # Function for start automatic executing test
@@ -197,33 +206,15 @@ def start_test(user: dict, drv: webdriver, url: str, test_type: str = "personal"
 
     # -----------------------Starting test------------------------
     print("Начало тестирования:")
-    try_count = 3
-    if test_type == 'personal':
-        block = drv.find_element(By.XPATH, '//div[contains(text(), "Личный зачет")]/../../..')
+    if test_type == "personal":
+        start_personal(drv)
+    elif test_type == "family":
+        start_family()
     else:
-        block = drv.find_element(By.XPATH, '//div[contains(text(), "Семейный зачет")]/../../..')
-    try:
-        again = block.find_element(By.XPATH, '//button[.= "Еще раз"]')
-        drv.execute_script('Elem =  arguments[0]; Elem.click()', again)
-    except NoSuchElementException as err:
-        participate = block.find_element(By.XPATH, '//button[.= "Участвовать"]')
-        drv.execute_script('Elem =  arguments[0]; Elem.click()', participate)
-    sleep(1)
+        print('Выбранный вариант')
+        drv.quit()
+        sys.exit(1)
 
-
-    try:
-        if drv.find_element(By.XPATH, '//button[.="Завершить"]'):
-            drv.find_element(By.XPATH, '//button[.="Завершить"]').click()
-            sleep(1)
-            drv.find_element(By.XPATH, '//a[@class = "lkButton headerLk__btn-lk"]').click()
-            participate = drv.find_element(By.XPATH, '//button[.= "Участвовать"]')
-            print("Executing JS script")
-            drv.execute_script('Elem =  arguments[0]; Elem.click()', participate)
-            sleep(1)
-            if drv.find_element(By.XPATH, '//button[.="Начать"]'):
-                drv.find_element(By.XPATH, '//button[.="Начать"]').click()
-    except NoSuchElementException as e:
-        pass
     # Получаем количество вопросов
     questions_count = int(
         re.match(
