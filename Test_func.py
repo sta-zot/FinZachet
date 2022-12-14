@@ -1,6 +1,5 @@
 ############################ Import libs#################################################
 
-import linecache
 import re
 import sys
 from time import sleep
@@ -209,7 +208,7 @@ def start_test(user: dict, drv: webdriver, url: str, test_type: str = "personal"
     if test_type == "personal":
         start_personal(drv)
     elif test_type == "family":
-        start_family()
+        start_family(drv)
     else:
         print('Выбранный вариант')
         drv.quit()
