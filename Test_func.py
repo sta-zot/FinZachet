@@ -22,6 +22,86 @@ from questions_db import questions_list
 ########################################Functions##############################################
 
 
+def confirm(drv: webdriver.Chrome, ms_url: str, m_address: str):
+    """
+    Function confirmed user registration
+    :param drv: Chrome object, may be new, or with initialised with link
+    :param ms_url: Mail service URL
+    :param m_address: Mail address
+    :return: Chrome object with address link from confirm button.
+    """
+
+    drv.get(ms_url)
+    sleep(3)
+    # Login to email service
+    login = drv.find_element(By.ID, 'login')
+    login.send_keys(m_address)
+    login.send_keys(Keys.ENTER)
+    del login
+    # Get frames
+    mail_list_frame = drv.find_element(By.XPATH, '//iframe[@name="ifinbox"]')
+    mail_cont_frame = drv.find_element(By.XPATH, '//iframe[@name = "ifmail"]')
+    # Get necessary mail from mail list
+    drv.switch_to.frame(mail_list_frame)
+    mail = drv.find_element(By.XPATH, '//div[@class = "lms" and text() = "Подтверждение Emailадреса" ]')
+    mail.click()
+    drv.switch_to.default_content()
+    # confirm registration
+    drv.switch_to.frame(mail_cont_frame)
+    # Get confirmation link
+    confirm_registration = drv.find_element(By.XPATH,
+                                            '//a[contains(@href, "https://finzachet.ru/api/auth/email/verify")]')
+    confirm_registration.click()
+    sleep(0.5)
+    return drv
+
+
+def create_email():
+    pass
+
+
+def registration_on_site(drv: webdriver.Chrome, user_data: dict, url: str ) -> int:
+    """
+    Function for register user on site
+    :param drv: WebDriver object
+    :param user_data: Dictionary with user data.
+    :param url: The address of the site where you need to register
+    :return: Return code, Function return 0 when function without error.
+    """
+    drv.get(url)
+    sleep(2)
+    participate = drv.find_element(
+        By.XPATH,
+        '//a[contains(@class, bannerWithNavigation__main-btn) and contains(text(), "Участвовать")]')
+    participate.click()
+    sleep(1)
+    registration_bt = drv.find_element(
+        By.XPATH,
+        '//a[contains(@class, "authorizationForm__tab ") and contains(text(), "Зарегистрироваться")]')
+    registration_bt.click()
+    sleep(0.5)
+    input_name = drv.find_element(By.XPATH, '//input[contains(@placeholder, "Имя")]')
+    input_name.clear()
+    input_name.send_keys(user_data["name"])
+    input_mail = drv.find_element(By.XPATH, '//input[contains(@placeholder, "Email")]')
+    input_mail.clear()
+    if user_data['email'] == '':
+        email_address = create_email()
+    else:
+        email_address = user_data['email']
+    input_mail.send_keys(email_address)
+    input_paswd = drv.find_element(By.XPATH, '//input[contains(@placeholder, "Пароль")]')
+    input_paswd_confirm = drv.find_element(By.XPATH, '//input[contains(@placeholder, "Подтверждение пароля")]')
+    input_paswd.clear()
+    input_paswd.send_keys(user_data['password'])
+    input_paswd_confirm.clear()
+    input_paswd_confirm.send_keys(user_data['password'])
+    singin_bt = drv.find_element(By.XPATH, '//div[@class="button__name" and contains(text(), "Войти")]')
+    singin_bt.click()
+    drv.quit()
+    return 0
+
+
 def printException():
     exc_type, exc_obj, tb = sys.exc_info()
     f = tb.tb_frame
@@ -44,9 +124,10 @@ def select_answer(
 
 
 # Function for start automatic executing test
-def start_test(user: dict, drv: webdriver, url: str) -> int:
+def start_test(user: dict, drv: webdriver, url: str, test_type: str = "personal") -> int:
     """
     Функция принимает словарь с данными пользователя и проходит тест
+        :param: test_type takes 2  kinds of values personal or family
         :param: user Параметр с типом словарь содержащий информацию о проходящем иестирование/ A parameter with the dictionary type containing information about the being tested
         :param: drv Параметр являющийся объектом класса webdriver./ A parameter that is the webdriver instances
         :param: url Строковый параметр содержащий адрес WEB сайта/ This is string parameter containing the address of a WEB site
@@ -59,6 +140,7 @@ def start_test(user: dict, drv: webdriver, url: str) -> int:
     element.click()
     del element
     sleep(0.5)
+    # Авторизация на сайте
     email = drv.find_element(By.XPATH, '//input[@placeholder = "Email"]')
     email.clear()
     email.send_keys(user["email"])
@@ -68,7 +150,7 @@ def start_test(user: dict, drv: webdriver, url: str) -> int:
     paswd.send_keys(Keys.ENTER)
     sleep(1)
     del email, paswd
-    # Edit profile
+    # --------------------Begin edit profile---------------------
     try:
         drv.find_element(
             By.XPATH,
@@ -111,20 +193,24 @@ def start_test(user: dict, drv: webdriver, url: str) -> int:
     sleep(1)
     drv.find_element(By.XPATH, ('//div[@class = "button__name" and text() = "Сохранить"] ')).click()
     sleep(1)
-    # Starting test
+    # --------------------Ending edit profile---------------------
+
+    # -----------------------Starting test------------------------
     print("Начало тестирования:")
     try_count = 3
+    if test_type == 'personal':
+        block = drv.find_element(By.XPATH, '//div[contains(text(), "Личный зачет")]/../../..')
+    else:
+        block = drv.find_element(By.XPATH, '//div[contains(text(), "Семейный зачет")]/../../..')
     try:
-        again = drv.find_element(By.XPATH, '//button[.= "Еще раз"]')
+        again = block.find_element(By.XPATH, '//button[.= "Еще раз"]')
         drv.execute_script('Elem =  arguments[0]; Elem.click()', again)
     except NoSuchElementException as err:
-        participate = drv.find_element(By.XPATH, '//button[.= "Участвовать"]')
+        participate = block.find_element(By.XPATH, '//button[.= "Участвовать"]')
         drv.execute_script('Elem =  arguments[0]; Elem.click()', participate)
     sleep(1)
 
-    # if drv.find_element(By.XPATH, '//button[.="Начать"]'):
-    #     drv.find_element(By.XPATH, '//button[.="Начать"]').click()
-    # sleep(1)
+
     try:
         if drv.find_element(By.XPATH, '//button[.="Завершить"]'):
             drv.find_element(By.XPATH, '//button[.="Завершить"]').click()

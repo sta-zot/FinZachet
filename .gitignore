@@ -1,4 +1,4 @@
 /venv/
-/.idea/*
+/.idea
 geckodriver.log
 ./test_script.ipynb
